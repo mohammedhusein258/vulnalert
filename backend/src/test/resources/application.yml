@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:vulnalert;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+  cloud:
+    aws:
+      sqs:
+        enabled: false
+app:
+  security-mode: demo
+  frontend-url: http://localhost:5173
+  nvd:
+    base-url: http://localhost:9999
+    api-key: ""
+    poll-rate-ms: 999999999
+    initial-delay-ms: 999999999
+  aws:
+    queue-url: ""

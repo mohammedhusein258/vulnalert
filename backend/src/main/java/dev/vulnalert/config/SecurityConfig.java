@@ -1,0 +1,13 @@
+package dev.vulnalert.config;
+import jakarta.servlet.*; import jakarta.servlet.http.*; import org.springframework.beans.factory.annotation.Value; import org.springframework.boot.web.servlet.FilterRegistrationBean; import org.springframework.context.annotation.*; import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.core.authority.SimpleGrantedAuthority; import org.springframework.security.core.context.SecurityContextHolder; import org.springframework.security.web.SecurityFilterChain; import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; import org.springframework.stereotype.Component; import org.springframework.web.cors.*; import java.io.IOException; import java.util.List;
+@Configuration
+public class SecurityConfig {
+ @Bean SecurityFilterChain filterChain(HttpSecurity http,DemoAuthenticationFilter demo,@Value("${app.security-mode}") String mode)throws Exception{http.cors(c->{}).csrf(c->c.ignoringRequestMatchers("/api/**")).authorizeHttpRequests(a->a.requestMatchers("/actuator/health","/swagger-ui/**","/v3/api-docs/**").permitAll().anyRequest().authenticated());if("oauth".equalsIgnoreCase(mode))http.oauth2Login(o->{});else http.addFilterBefore(demo,UsernamePasswordAuthenticationFilter.class);return http.build();}
+ @Bean CorsConfigurationSource cors(@Value("${app.frontend-url}")String frontend){var c=new CorsConfiguration();c.setAllowedOrigins(List.of(frontend));c.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));c.setAllowedHeaders(List.of("*"));c.setAllowCredentials(true);var s=new UrlBasedCorsConfigurationSource();s.registerCorsConfiguration("/**",c);return s;}
+ @Bean FilterRegistrationBean<DemoAuthenticationFilter> disableContainerRegistration(DemoAuthenticationFilter filter){var bean=new FilterRegistrationBean<>(filter);bean.setEnabled(false);return bean;}
+}
+@Component
+class DemoAuthenticationFilter implements Filter {
+ private final String mode; DemoAuthenticationFilter(@Value("${app.security-mode}")String mode){this.mode=mode;}
+ public void doFilter(ServletRequest req,ServletResponse res,FilterChain chain)throws IOException,ServletException{if("demo".equalsIgnoreCase(mode)){String email=((HttpServletRequest)req).getHeader("X-Demo-User");if(email==null||email.isBlank())email="demo@vulnalert.local";SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(email,"",List.of(new SimpleGrantedAuthority("ROLE_USER"))));}chain.doFilter(req,res);}
+}

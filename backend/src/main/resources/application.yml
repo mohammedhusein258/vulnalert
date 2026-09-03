@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: vulnalert-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vulnalert}
+    username: ${SPRING_DATASOURCE_USERNAME:vulnalert}
+    password: ${SPRING_DATASOURCE_PASSWORD:vulnalert}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID:local-placeholder}
+            client-secret: ${GITHUB_CLIENT_SECRET:local-placeholder}
+            scope: read:user,user:email
+server:
+  error:
+    include-message: always
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+app:
+  security-mode: ${APP_SECURITY_MODE:demo}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  nvd:
+    base-url: https://services.nvd.nist.gov/rest/json/cves/2.0
+    api-key: ${NVD_API_KEY:}
+    poll-rate-ms: ${NVD_POLL_RATE_MS:21600000}
+    initial-delay-ms: ${NVD_INITIAL_DELAY_MS:60000}
+  aws:
+    queue-url: ${AWS_SQS_QUEUE_URL:}
